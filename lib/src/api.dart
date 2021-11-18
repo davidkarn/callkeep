@@ -40,7 +40,6 @@ class FlutterCallkeep extends EventManager {
           options['android'] as Map<String, dynamic>, backgroundMode);
       return;
     }
-    await _setupIOS(options['ios'] as Map<String, dynamic>);
   }
 
   Future<void> registerPhoneAccount() async {
@@ -97,13 +96,6 @@ class FlutterCallkeep extends EventManager {
       });
       return;
     }
-    await _channel.invokeMethod<void>('displayIncomingCall', <String, dynamic>{
-      'uuid': uuid,
-      'handle': handle,
-      'handleType': handleType,
-      'hasVideo': hasVideo,
-      'localizedCallerName': localizedCallerName
-    });
   }
 
   Future<void> answerIncomingCall(String uuid) async {
@@ -123,29 +115,14 @@ class FlutterCallkeep extends EventManager {
       });
       return;
     }
-    await _channel.invokeMethod<void>('startCall', <String, dynamic>{
-      'uuid': uuid,
-      'number': number,
-      'callerName': callerName,
-      'handleType': handleType,
-      'hasVideo': hasVideo
-    });
   }
 
   Future<void> reportConnectingOutgoingCallWithUUID(String uuid) async {
-    //only available on iOS
-    if (isIOS) {
-      await _channel.invokeMethod<void>('reportConnectingOutgoingCallWithUUID',
-          <String, dynamic>{'uuid': uuid});
-    }
+
   }
 
   Future<void> reportConnectedOutgoingCallWithUUID(String uuid) async {
-    //only available on iOS
-    if (isIOS) {
-      await _channel.invokeMethod<void>('reportConnectedOutgoingCallWithUUID',
-          <String, dynamic>{'uuid': uuid});
-    }
+
   }
 
   Future<void> reportEndCallWithUUID(String uuid, int reason) async =>
@@ -161,8 +138,6 @@ class FlutterCallkeep extends EventManager {
       await _channel
           .invokeMethod<void>('rejectCall', <String, dynamic>{'uuid': uuid});
     } else {
-      await _channel
-          .invokeMethod<void>('endCall', <String, dynamic>{'uuid': uuid});
     }
   }
 
@@ -213,13 +188,10 @@ class FlutterCallkeep extends EventManager {
       await _channel.invokeMethod<void>(
           'sendDTMF', <String, dynamic>{'uuid': uuid, 'key': key});
 
-  Future<void> checkIfBusy() async => isIOS
-      ? await _channel.invokeMethod<void>('checkIfBusy', <String, dynamic>{})
-      : throw Exception('CallKeep.checkIfBusy was called from unsupported OS');
+  Future<void> checkIfBusy() async {}
 
-  Future<void> checkSpeaker() async => isIOS
-      ? await _channel.invokeMethod<void>('checkSpeaker', <String, dynamic>{})
-      : throw Exception('CallKeep.checkSpeaker was called from unsupported OS');
+  Future<void> checkSpeaker() async {
+  }
 
   Future<void> setAvailable(String state) async {
     if (isIOS) {
@@ -261,17 +233,6 @@ class FlutterCallkeep extends EventManager {
   // @deprecated
   Future<void> reportUpdatedCall(
       String uuid, String localizedCallerName) async {
-    print(
-        'CallKeep.reportUpdatedCall is deprecated, use CallKeep.updateDisplay instead');
-
-    return isIOS
-        ? await _channel.invokeMethod<void>(
-            'reportUpdatedCall', <String, dynamic>{
-            'uuid': uuid,
-            'localizedCallerName': localizedCallerName
-          })
-        : throw Exception(
-            'CallKeep.reportUpdatedCall was called from unsupported OS');
   }
 
   Future<bool> backToForeground() async {
@@ -287,15 +248,6 @@ class FlutterCallkeep extends EventManager {
   }
 
   Future<void> _setupIOS(Map<String, dynamic> options) async {
-    if (options['appName'] == null) {
-      throw Exception('CallKeep.setup: option "appName" is required');
-    }
-    if (options['appName'] is String == false) {
-      throw Exception(
-          'CallKeep.setup: option "appName" should be of type "string"');
-    }
-    return await _channel
-        .invokeMethod<void>('setup', <String, dynamic>{'options': options});
   }
 
   Future<bool> _setupAndroid(
