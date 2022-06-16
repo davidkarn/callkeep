@@ -135,7 +135,10 @@ public class VoiceConnectionService extends ConnectionService {
         incomingCallConnection.setRinging();
         incomingCallConnection.setInitialized();
         Log.d(TAG, "incomingconnection selfmanaged??");
-        incomingCallConnection.setConnectionCapabilities(Connection.CAPABILITY_HOLD & Connection.CAPABILITY_SUPPORT_HOLD);
+        incomingCallConnection.setConnectionCapabilities(
+                Connection.CAPABILITY_HOLD
+                        | Connection.CAPABILITY_SUPPORT_HOLD
+                        | Connection.CAPABILITY_MUTE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
             incomingCallConnection.setConnectionProperties(Connection.PROPERTY_SELF_MANAGED);
             Log.d(TAG, "settingselfmanaged");
@@ -192,7 +195,10 @@ public class VoiceConnectionService extends ConnectionService {
         outgoingCallConnection.setDialing();
         outgoingCallConnection.setAudioModeIsVoip(true);
         outgoingCallConnection.setCallerDisplayName(displayName, TelecomManager.PRESENTATION_ALLOWED);
-        outgoingCallConnection.setConnectionCapabilities(Connection.CAPABILITY_HOLD & Connection.CAPABILITY_SUPPORT_HOLD);
+        outgoingCallConnection.setConnectionCapabilities(
+                                Connection.CAPABILITY_HOLD
+                        | Connection.CAPABILITY_SUPPORT_HOLD
+                        | Connection.CAPABILITY_MUTE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
             outgoingCallConnection.setConnectionProperties(Connection.PROPERTY_SELF_MANAGED);
             Log.d(TAG, "settingselfmanaged");
