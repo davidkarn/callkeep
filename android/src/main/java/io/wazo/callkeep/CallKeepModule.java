@@ -28,6 +28,7 @@ import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Icon;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -401,6 +402,41 @@ public class CallKeepModule {
         result.success(!hasSim || hasDefaultAccount);
     }
 
+    private class OnFocusChangeListener implements AudioManager.OnAudioFocusChangeListener {
+
+        @Override
+        public void onAudioFocusChange(final int focusChange) {
+            String focusChangeStr;
+            switch (focusChange) {
+                case AudioManager.AUDIOFOCUS_GAIN:
+                    focusChangeStr = "AUDIOFOCUS_GAIN";
+                    break;
+                case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT:
+                    focusChangeStr = "AUDIOFOCUS_GAIN_TRANSIENT";
+                    break;
+                case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE:
+                    focusChangeStr = "AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE";
+                    break;
+                case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK:
+                    focusChangeStr = "AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK";
+                    break;
+                case AudioManager.AUDIOFOCUS_LOSS:
+                    focusChangeStr = "AUDIOFOCUS_LOSS";
+                    break;
+                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+                    focusChangeStr = "AUDIOFOCUS_LOSS_TRANSIENT";
+                    break;
+                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                    focusChangeStr = "AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK";
+                    break;
+                default:
+                    focusChangeStr = "AUDIOFOCUS_UNKNOW";
+                    break;
+            }
+
+            Log.d(TAG, "onAudioFocusChange: " + focusChange + " - " + focusChangeStr);
+        }
+    }
     
     public void setOnHold(String uuid, boolean shouldHold) {
         Connection conn = VoiceConnectionService.getConnection(uuid);
@@ -411,6 +447,17 @@ public class CallKeepModule {
         if (shouldHold == true) {
             conn.onHold();
         } else {
+            AudioManager audioManager = ((AudioManager) getAppContext().getSystemService(Context.AUDIO_SERVICE));
+            int result = audioManager.requestAudioFocus(
+                    new OnFocusChangeListener(),
+                    AudioManager.STREAM_VOICE_CALL,
+                    AudioManager.AUDIOFOCUS_GAIN);
+            if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                Log.d(TAG, "AudioFocus granted");
+            } else if (result == AudioManager.AUDIOFOCUS_REQUEST_FAILED) {
+                Log.d(TAG, "AudioFocus failed");
+            }
+
             conn.onUnhold();
         }
     }
