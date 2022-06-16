@@ -104,6 +104,7 @@ public class CallKeepModule {
     }
 
     public boolean handleMethodCall(@NonNull MethodCall call, @NonNull Result result) {
+        Log.d(TAG, "Callkeep method: " + call.method);
         switch(call.method) {
             case "setup": {
                 setup(new ConstraintsMap((Map<String, Object>)call.argument("options")));
@@ -593,17 +594,20 @@ public class CallKeepModule {
         String appName = this.getApplicationName(this.getAppContext());
 
         PhoneAccount.Builder builder = new PhoneAccount.Builder(handle, appName)
-                .setCapabilities(PhoneAccount.CAPABILITY_CALL_PROVIDER);
-
+                .setCapabilities(PhoneAccount.CAPABILITY_SELF_MANAGED);
+Log.d(TAG, "setphoneaccountcapabilities selfmanaged");
         if (_settings != null && _settings.hasKey("imageName")) {
             int identifier = appContext.getResources().getIdentifier(_settings.getString("imageName"), "drawable", appContext.getPackageName());
             Icon icon = Icon.createWithResource(appContext, identifier);
             builder.setIcon(icon);
         }
 
+
         PhoneAccount account = builder.build();
 
         telephonyManager = (TelephonyManager) this.getAppContext().getSystemService(Context.TELEPHONY_SERVICE);
+
+        PhoneAccount phoneAccount = builder.build();
 
         telecomManager.registerPhoneAccount(account);
     }

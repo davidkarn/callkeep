@@ -123,6 +123,12 @@ public class VoiceConnection extends Connection {
         destroy();
     }
 
+    @Override
+    public void onShowIncomingCallUi() {
+        super.onShowIncomingCallUi();
+        Log.d(TAG, "showing incoming call ui selfmanaged");
+    }
+
     public void reportDisconnect(int reason) {
         super.onDisconnect();
         switch (reason) {

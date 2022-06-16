@@ -17,6 +17,7 @@
 
 package io.wazo.callkeep;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningTaskInfo;
@@ -116,7 +117,9 @@ public class VoiceConnectionService extends ConnectionService {
         Log.d(TAG, "deinitConnection:" + connectionId);
         VoiceConnectionService.hasOutgoingCall = false;
 
-        currentConnectionService.stopForegroundService();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            currentConnectionService.stopForegroundService();
+        }
 
         if (currentConnections.containsKey(connectionId)) {
             currentConnections.remove(connectionId);
@@ -131,11 +134,19 @@ public class VoiceConnectionService extends ConnectionService {
         Connection incomingCallConnection = createConnection(request);
         incomingCallConnection.setRinging();
         incomingCallConnection.setInitialized();
+        Log.d(TAG, "incomingconnection selfmanaged??");
+        incomingCallConnection.setConnectionCapabilities(Connection.CAPABILITY_HOLD & Connection.CAPABILITY_SUPPORT_HOLD);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+            incomingCallConnection.setConnectionProperties(Connection.PROPERTY_SELF_MANAGED);
+            Log.d(TAG, "settingselfmanaged");
+        }
 
         startForegroundService();
 
         return incomingCallConnection;
     }
+
+
 
     @Override
     public Connection onCreateOutgoingConnection(PhoneAccountHandle connectionManagerPhoneAccount, ConnectionRequest request) {
@@ -181,6 +192,11 @@ public class VoiceConnectionService extends ConnectionService {
         outgoingCallConnection.setDialing();
         outgoingCallConnection.setAudioModeIsVoip(true);
         outgoingCallConnection.setCallerDisplayName(displayName, TelecomManager.PRESENTATION_ALLOWED);
+        outgoingCallConnection.setConnectionCapabilities(Connection.CAPABILITY_HOLD & Connection.CAPABILITY_SUPPORT_HOLD);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+            outgoingCallConnection.setConnectionProperties(Connection.PROPERTY_SELF_MANAGED);
+            Log.d(TAG, "settingselfmanaged");
+        }
 
         startForegroundService();
 
@@ -248,6 +264,7 @@ public class VoiceConnectionService extends ConnectionService {
         startForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE, notification);
     }
 
+    @SuppressLint("WrongConstant")
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void stopForegroundService() {
         Log.d(TAG, "[VoiceConnectionService] stopForegroundService");
