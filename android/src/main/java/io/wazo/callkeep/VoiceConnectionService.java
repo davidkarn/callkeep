@@ -339,6 +339,7 @@ public class VoiceConnectionService extends ConnectionService {
             Context context = getApplicationContext();
             TelecomManager telecomManager = (TelecomManager) context.getSystemService(context.TELECOM_SERVICE);
             PhoneAccount phoneAccount = telecomManager.getPhoneAccount(request.getAccountHandle());
+            connection.setConnectionProperties(Connection.PROPERTY_SELF_MANAGED);
 
             //If the phone account is self managed, then this connection must also be self managed.
             if((phoneAccount.getCapabilities() & PhoneAccount.CAPABILITY_SELF_MANAGED) == PhoneAccount.CAPABILITY_SELF_MANAGED) {

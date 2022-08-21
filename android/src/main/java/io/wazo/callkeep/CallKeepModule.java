@@ -202,6 +202,16 @@ public class CallKeepModule {
                 result.success(null);
             }
             break;
+            case "setSpeaker": {
+                setSpeaker((String)call.argument("uuid"));
+                result.success(null);
+            }
+            break;
+            case "setEarpiece": {
+                setEarpiece((String)call.argument("uuid"));
+                result.success(null);
+            }
+            break;
             case "openPhoneAccounts": {
                 openPhoneAccounts(result);
             }
@@ -223,13 +233,17 @@ public class CallKeepModule {
     }
     
     public void setup(ConstraintsMap options) {
-        if (isReceiverRegistered) {
+Log.d(TAG,"setup setphoneaccount selfmanaged isavail????");
+if (isReceiverRegistered) {
             return;
         }
         VoiceConnectionService.setAvailable(false);
         this._settings = options;
+
         if (isConnectionServiceAvailable()) {
+            Log.d(TAG,"setphoneaccount selfmanaged isavail");
             this.registerPhoneAccount();
+            Log.d(TAG,"setphoneaccount selfmanaged registered");
             this.registerEvents();
             VoiceConnectionService.setAvailable(true);
         }
@@ -287,6 +301,42 @@ public class CallKeepModule {
         conn.onAnswer();
     }
 
+
+    public void setSpeaker(String uuid) {
+        if (!isConnectionServiceAvailable() || !hasPhoneAccount()) {
+            return;
+        }
+
+        Connection conn = VoiceConnectionService.getConnection(uuid);
+        if (conn == null) {
+            return;
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Log.d(TAG, "speaker setting audio route");
+            conn.setAudioRoute(CallAudioState.ROUTE_SPEAKER);
+        } else {
+            Log.d(TAG, "audio route speaker version too low");
+        }
+    }
+
+    public void setEarpiece(String uuid) {
+        if (!isConnectionServiceAvailable() || !hasPhoneAccount()) {
+            return;
+        }
+
+        Connection conn = VoiceConnectionService.getConnection(uuid);
+        if (conn == null) {
+            return;
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Log.d(TAG, "earpiece setting audio route");
+            conn.setAudioRoute(CallAudioState.ROUTE_EARPIECE);
+        } else {
+            Log.d(TAG, "audio route earpiece version too low");
+        }
+    }
     
     public void startCall(String uuid, String number, String callerName) {
         if (!isConnectionServiceAvailable() || !hasPhoneAccount() || !hasPermissions() || number == null) {
@@ -633,10 +683,11 @@ public class CallKeepModule {
     }
 
     private void registerPhoneAccount(Context appContext) {
+        Log.d(TAG,"registerphoneaccount");
         if (!isConnectionServiceAvailable()) {
             return;
         }
-
+Log.d(TAG,"setselfmanaged");
         this.initializeTelecomManager();
         String appName = this.getApplicationName(this.getAppContext());
 

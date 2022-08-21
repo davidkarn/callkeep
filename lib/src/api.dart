@@ -235,6 +235,24 @@ class FlutterCallkeep extends EventManager {
       String uuid, String localizedCallerName) async {
   }
 
+  setSpeaker(String callUUID) async {
+    if (isIOS) {
+      return;
+    }
+
+    await _channel.invokeMethod<void>(
+        'setSpeaker', <String, dynamic>{'uuid': callUUID});
+  }
+
+    setEarpiece(String callUUID) async {
+    if (isIOS) {
+      return;
+    }
+
+    await _channel.invokeMethod<void>(
+        'setEarpiece', <String, dynamic>{'uuid': callUUID});
+  }
+
   Future<bool> backToForeground() async {
     if (isIOS) {
       return false;
